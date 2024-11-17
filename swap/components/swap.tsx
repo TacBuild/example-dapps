@@ -4,9 +4,74 @@ import * as React from "react";
 import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CHAIN, useTonWallet } from "@tonconnect/ui-react";
+import ConnectWallet from "./connect-wallet";
+import { TacSdk } from "tac-sdk";
+import { ethers } from "ethers";
+import { toNano } from "@ton/ton";
+import { Network, RawSender } from "@/lib/sender";
+
+const EVM_TKA_ADDRESS = "0x7346896431955ad3bD9Fc23C8E3f0447eE1a52Cf";
+const EVM_TKB_ADDRESS = "0x392D1cCB04d25fCBcA7D4fc0E429Dbc1F9fEe73F";
+const UNISWAPV2_PROXY_ADDRESS = "0x2D478BffCEbF652e1Cb7e32Db9C674E10e873e57";
 
 export function TokenSwap() {
   const [sellAmount, setSellAmount] = React.useState<number>(0);
+
+  const wallet = useTonWallet();
+
+  const handleSwap = async () => {
+    try {
+      const tacSdk = new TacSdk({
+        network: CHAIN.TESTNET,
+      });
+
+      // create evm proxy msg
+      const abi = new ethers.AbiCoder();
+      const encodedParameters = abi.encode(
+        ["uint256", "uint256", "address[]", "address", "uint256"],
+        [
+          Number(toNano(sellAmount)),
+          Number(toNano(sellAmount)),
+          [EVM_TKA_ADDRESS, EVM_TKB_ADDRESS],
+          UNISWAPV2_PROXY_ADDRESS,
+          19010987500,
+        ]
+      );
+
+      const evmProxyMsg = {
+        evmTargetAddress: UNISWAPV2_PROXY_ADDRESS,
+        methodName:
+          "swapExactTokensForTokens(uint256,uint256,address[],address,uint256)",
+        encodedParameters,
+      };
+
+      // create sender abstraction
+      const mnemonic = process.env.TVM_MNEMONICS || ""; // 24 words mnemonic
+      const sender = new RawSender(mnemonic);
+
+      // create JettonTransferData
+      const jettons = [];
+      jettons.push({
+        fromAddress: await sender.getSenderAddress(Network.Testnet),
+        tokenAddress: EVM_TKA_ADDRESS,
+        jettonAmount: sellAmount,
+        tonAmount: 0.35,
+      });
+
+      const tx = await tacSdk.sendShardJettonTransferTransaction(
+        jettons,
+        evmProxyMsg,
+        sender
+      );
+
+      console.log(tx);
+
+      alert("transation submitted");
+    } catch (e) {
+      alert(e);
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto p-3 rounded-3xl bg-[#131313] z-20  ">
@@ -19,7 +84,11 @@ export function TokenSwap() {
               type="text"
               placeholder="0"
               value={sellAmount}
-              onChange={(e) => setSellAmount(Number(e.target.value))}
+              onChange={(e) => {
+                if (Number(e.target.value) > 0) {
+                  setSellAmount(Number(e.target.value));
+                }
+              }}
               className=" h-16 text-white bg-transparent border-none focus-visible:ring-0 p-0 placeholder:text-gray-400"
               style={{
                 fontSize: "2rem",
@@ -89,9 +158,18 @@ export function TokenSwap() {
         </div>
 
         {/* Get Started Button */}
-        <Button className="w-full h-14 rounded-2xl mt-2 text-lg hover:text-white">
-          Get started
-        </Button>
+        {wallet ? (
+          <ConnectWallet
+            text="Swap"
+            onClick={handleSwap}
+            disabled={sellAmount === 0}
+            className="w-full h-14 rounded-2xl mt-2 text-lg bg-primary text-white"
+          />
+        ) : (
+          <Button className="w-full h-14 rounded-2xl mt-2 text-lg hover:text-white">
+            Get started
+          </Button>
+        )}
       </div>
     </div>
   );

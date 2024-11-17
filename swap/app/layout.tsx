@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en" className={GeistSans.variable}>
       <body>
         <div className="z-20">{children}</div>
-        <div className="z-10 absolute inset-0 bg-repeat bg-[url('https://app.uniswap.org/images/noise-color.png')] bg-center bg-[length:200px_200px]  opacity-[0.015]" />
+        {/* <div className="z-10 absolute inset-0 bg-repeat bg-[url('https://app.uniswap.org/images/noise-color.png')] bg-center bg-[length:200px_200px]  opacity-[0.015]" /> */}
       </body>
     </html>
   );

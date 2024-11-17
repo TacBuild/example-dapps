@@ -4,7 +4,7 @@ import { TonConnectUIProvider } from "@tonconnect/ui-react";
 
 export function TonProvider({ children }: { children: React.ReactNode }) {
   return (
-    <TonConnectUIProvider manifestUrl="https://<YOUR_APP_URL>/tonconnect-manifest.json">
+    <TonConnectUIProvider manifestUrl="https://www.jsonkeeper.com/b/ZKTK">
       {children}
     </TonConnectUIProvider>
   );
