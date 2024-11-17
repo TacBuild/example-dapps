@@ -1,5 +1,7 @@
 ## Tac x Uniswap Example
 
+![screenshot](screenshot.jpeg)
+
 A example application to swap TAC tokens using Uniswap V2.
 
 This is a Next.js project with Tailwind CSS and shadcn/ui.
