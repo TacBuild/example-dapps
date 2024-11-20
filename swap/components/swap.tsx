@@ -4,15 +4,18 @@ import * as React from "react";
 import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CHAIN, useTonWallet } from "@tonconnect/ui-react";
+import { useTonWallet } from "@tonconnect/ui-react";
 import ConnectWallet from "./connect-wallet";
-import { TacSdk } from "tac-sdk";
+import { TacSdk, RawSender, Network } from "tac-sdk";
 import { ethers } from "ethers";
 import { toNano } from "@ton/ton";
-import { Network, RawSender } from "@/lib/sender";
 
-const EVM_TKA_ADDRESS = "0x7346896431955ad3bD9Fc23C8E3f0447eE1a52Cf";
-const EVM_TKB_ADDRESS = "0x392D1cCB04d25fCBcA7D4fc0E429Dbc1F9fEe73F";
+const EVM_TKA_ADDRESS = "0x59470DE4Ac9EdbEee5fb0e40b6d5164d84A2F11B";
+const TVM_TKA_ADDRESS = "EQBLi0v_y-KiLlT1VzQJmmMbaoZnLcMAHrIEmzur13dwOmM1";
+
+const EVM_TKB_ADDRESS = "0xC21055458a009fe2e95eBe37A8894A0a703c3835";
+const TVM_TKB_ADDRESS = "EQCsQSo54ajAorOfDUAM-RPdDJgs0obqyrNSEtvbjB7hh2oK";
+
 const UNISWAPV2_PROXY_ADDRESS = "0x2D478BffCEbF652e1Cb7e32Db9C674E10e873e57";
 
 export function TokenSwap() {
@@ -23,7 +26,7 @@ export function TokenSwap() {
   const handleSwap = async () => {
     try {
       const tacSdk = new TacSdk({
-        network: CHAIN.TESTNET,
+        network: Network.Testnet,
       });
 
       // create evm proxy msg
@@ -47,14 +50,15 @@ export function TokenSwap() {
       };
 
       // create sender abstraction
-      const mnemonic = process.env.TVM_MNEMONICS || ""; // 24 words mnemonic
+      const mnemonic =
+        "ffd73dd0a151228c63b65629150ae8ddfd697f7775b131a17fc313be755db728";
       const sender = new RawSender(mnemonic);
 
       // create JettonTransferData
       const jettons = [];
       jettons.push({
         fromAddress: await sender.getSenderAddress(Network.Testnet),
-        tokenAddress: EVM_TKA_ADDRESS,
+        tokenAddress: TVM_TKA_ADDRESS,
         jettonAmount: sellAmount,
         tonAmount: 0.35,
       });
@@ -67,9 +71,9 @@ export function TokenSwap() {
 
       console.log(tx);
 
-      alert("transation submitted");
+      console.log("transation submitted");
     } catch (e) {
-      alert(e);
+      console.log(e);
     }
   };
 
